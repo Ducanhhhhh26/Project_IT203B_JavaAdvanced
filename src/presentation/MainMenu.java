@@ -1,0 +1,81 @@
+package presentation;
+
+import model.User;
+import service.AuthService;
+import java.util.Scanner;
+
+public class MainMenu {
+    private AuthService authService = new AuthService();
+    private Scanner scanner = new Scanner(System.in);
+
+    public void start() {
+        while (true) {
+            System.out.println("\n=== HỆ THỐNG QUẢN LÝ PHÒNG HỌP ===");
+            System.out.println("1. Đăng nhập");
+            System.out.println("2. Đăng ký (Dành cho Nhân viên)");
+            System.out.println("0. Thoát");
+            System.out.print("Chọn: ");
+            String choice = scanner.nextLine();
+
+            switch (choice) {
+                case "1":
+                    handleLogin();
+                    break;
+                case "2":
+                    handleRegister();
+                    break;
+                case "0":
+                    System.out.println("Tạm biệt!");
+                    System.exit(0);
+                    break;
+                default:
+                    System.out.println("Lựa chọn không hợp lệ!");
+            }
+        }
+    }
+
+    private void handleLogin() {
+        System.out.print("Username: "); String user = scanner.nextLine();
+        System.out.print("Password: "); String pass = scanner.nextLine();
+
+        User loggedInUser = authService.login(user, pass);
+        if (loggedInUser != null) {
+            System.out.println("Đăng nhập thành công! Vai trò: " + loggedInUser.getRole());
+            switch (loggedInUser.getRole()) { // Đã chuyển sang dùng Enum
+                case ADMIN:
+                    new AdminMenu().showMenu();
+                    break;
+                case EMPLOYEE:
+                    new EmployeeMenu(loggedInUser).showMenu();
+                    break;
+                case SUPPORT_STAFF:
+                    new SupportStaffMenu(loggedInUser).showMenu();
+                    break;
+                default:
+                    System.out.println("Vai trò không hợp lệ!");
+            }
+        } else {
+            System.out.println("Đăng nhập thất bại. Sai thông tin hoặc tài khoản không tồn tại!");
+        }
+    }
+
+    private void handleRegister() {
+        System.out.println("\n--- ĐĂNG KÝ TÀI KHOẢN NHÂN VIÊN ---");
+        System.out.print("Username: "); String user = scanner.nextLine();
+        System.out.print("Password: "); String pass = scanner.nextLine();
+        System.out.print("Họ tên: "); String fn = scanner.nextLine();
+        System.out.print("Email: "); String email = scanner.nextLine();
+        System.out.print("SĐT: "); String phone = scanner.nextLine();
+        System.out.print("Phòng ban: "); String dept = scanner.nextLine();
+
+        if (authService.registerEmployee(user, pass, fn, email, phone, dept)) {
+            System.out.println("Đăng ký thành công! Bạn có thể đăng nhập ngay bây giờ.");
+        } else {
+            System.out.println("Đăng ký thất bại. Vui lòng thử lại.");
+        }
+    }
+
+    public static void main(String[] args) {
+        new MainMenu().start();
+    }
+}
