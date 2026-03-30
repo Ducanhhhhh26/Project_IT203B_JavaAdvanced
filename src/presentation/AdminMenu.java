@@ -5,6 +5,8 @@ import service.AdminService;
 import service.EquipmentService;
 import service.RoomService;
 import model.Equipment;
+import model.Booking;
+import model.User;
 
 import java.util.List;
 import java.util.Scanner;
@@ -21,6 +23,8 @@ public class AdminMenu {
             System.out.println("1. Quản lý phòng họp");
             System.out.println("2. Quản lý thiết bị di động");
             System.out.println("3. Quản lý người dùng (Tạo tài khoản Support Staff)");
+            System.out.println("4. Duyệt yêu cầu đặt phòng");
+            System.out.println("5. Phân công Support Staff");
             System.out.println("0. Đăng xuất");
             System.out.print("Chọn: ");
             String choice = scanner.nextLine();
@@ -35,12 +39,83 @@ public class AdminMenu {
                 case "3":
                     manageUsers();
                     break;
+                case "4":
+                    manageBookings();
+                    break;
+                case "5":
+                    assignSupportStaff();
+                    break;
                 case "0":
                     return;
                 default:
                     System.out.println("Lựa chọn không hợp lệ!");
             }
         }
+    }
+
+    private void manageBookings() {
+        System.out.println("\n--- DUYỆT YÊU CẦU ĐẶT PHÒNG ---");
+        List<Booking> pendingBookings = adminService.getPendingBookings();
+        if (pendingBookings.isEmpty()) {
+            System.out.println("Không có yêu cầu nào đang chờ duyệt.");
+            return;
+        }
+
+        for (Booking b : pendingBookings) {
+            System.out.printf("ID: %d | Room ID: %d | User ID: %d | Time: %s to %s\n",
+                    b.getId(), b.getRoomId(), b.getUserId(), b.getStartTime(), b.getEndTime());
+        }
+
+        System.out.print("Nhập ID yêu cầu muốn duyệt (hoặc 0 để hủy): ");
+        int bookingId = Integer.parseInt(scanner.nextLine());
+        if (bookingId == 0) return;
+
+        System.out.print("Phê duyệt (1) hay Từ chối (2)? ");
+        String action = scanner.nextLine();
+        if (action.equals("1")) {
+            boolean success = adminService.approveBooking(bookingId);
+            System.out.println(success ? "Bạn đã phê duyệt thành công!" : "Lỗi phê duyệt!");
+        } else if (action.equals("2")) {
+            boolean success = adminService.rejectBooking(bookingId);
+            System.out.println(success ? "Bạn đã từ chối yêu cầu!" : "Lỗi từ chối!");
+        } else {
+            System.out.println("Lựa chọn không hợp lệ!");
+        }
+    }
+
+    private void assignSupportStaff() {
+        System.out.println("\n--- PHÂN CÔNG SUPPORT STAFF ---");
+        List<Booking> approvedBookings = adminService.getApprovedBookings();
+        if (approvedBookings.isEmpty()) {
+            System.out.println("Không có lịch đặt phòng APPROVED nào để phân công.");
+            return;
+        }
+
+        for (Booking b : approvedBookings) {
+            String staffStr = (b.getSupportStaffId() == null || b.getSupportStaffId() == 0) ? "Chưa có" : "Staff ID: " + b.getSupportStaffId();
+            System.out.printf("ID: %d | Room ID: %d | %s | Status: %s | Prep: %s\n",
+                    b.getId(), b.getRoomId(), staffStr, b.getStatus(), b.getPrepStatus());
+        }
+
+        System.out.print("Nhập ID lịch đặt phòng muốn phân công (hoặc 0 để hủy): ");
+        int bookingId = Integer.parseInt(scanner.nextLine());
+        if (bookingId == 0) return;
+
+        List<User> staffs = adminService.getSupportStaffs();
+        if (staffs.isEmpty()) {
+            System.out.println("Chưa có nhân viên hỗ trợ nào trong hệ thống.");
+            return;
+        }
+        System.out.println("Danh sách Support Staff:");
+        for (User u : staffs) {
+            System.out.printf("ID: %d | Name: %s\n", u.getId(), u.getFullName());
+        }
+
+        System.out.print("Nhập ID Staff muốn phân công: ");
+        int staffId = Integer.parseInt(scanner.nextLine());
+
+        boolean success = adminService.assignSupportStaff(bookingId, staffId);
+        System.out.println(success ? "Đã phân công thành công!" : "Lỗi phân công!");
     }
 
     private void manageRooms() {

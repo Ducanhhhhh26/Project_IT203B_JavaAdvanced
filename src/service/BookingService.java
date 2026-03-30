@@ -39,4 +39,8 @@ public class BookingService {
 
         return false;
     }
+
+    public List<Booking> getMyBookings(int userId) {
+        return bookingDAO.getBookingsByUserId(userId);
+    }
 }

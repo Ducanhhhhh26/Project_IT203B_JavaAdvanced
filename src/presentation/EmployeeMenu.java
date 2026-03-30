@@ -30,6 +30,7 @@ public class EmployeeMenu {
             System.out.println("\n=== MENU NHÂN VIÊN ===");
             System.out.println("Xin chào, " + currentUser.getFullName());
             System.out.println("1. Đặt phòng (Booking)");
+            System.out.println("2. Xem lịch sử đặt phòng của tôi");
             System.out.println("0. Đăng xuất");
             System.out.print("Chọn: ");
             String choice = scanner.nextLine();
@@ -38,11 +39,28 @@ public class EmployeeMenu {
                 case "1":
                     handleBooking();
                     break;
+                case "2":
+                    viewMyBookings();
+                    break;
                 case "0":
                     return;
                 default:
                     System.out.println("Tính năng đang phát triển hoặc lựa chọn không hợp lệ!");
             }
+        }
+    }
+
+    private void viewMyBookings() {
+        System.out.println("\n--- LỊCH SỬ ĐẶT PHÒNG CỦA TÔI ---");
+        List<model.Booking> myBookings = bookingService.getMyBookings(currentUser.getId());
+        if (myBookings.isEmpty()) {
+            System.out.println("Bạn chưa có lịch đặt phòng nào.");
+            return;
+        }
+
+        for (model.Booking b : myBookings) {
+            System.out.printf("ID: %d | Room ID: %d | Time: %s to %s | Status: %s | Prep: %s\n",
+                    b.getId(), b.getRoomId(), b.getStartTime(), b.getEndTime(), b.getStatus(), b.getPrepStatus());
         }
     }
 

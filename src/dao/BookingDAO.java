@@ -58,4 +58,116 @@ public class BookingDAO {
         }
         return -1;
     }
+
+    public List<Booking> getBookingsByStatus(String status) {
+        String sql = "SELECT * FROM bookings WHERE status = ?";
+        List<Booking> list = new ArrayList<>();
+        try (Connection conn = JDBCConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, status);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while(rs.next()){
+                    list.add(mapRowToBooking(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public List<Booking> getBookingsBySupportStaffId(int staffId) {
+        String sql = "SELECT * FROM bookings WHERE support_staff_id = ?";
+        List<Booking> list = new ArrayList<>();
+        try (Connection conn = JDBCConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, staffId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while(rs.next()){
+                    list.add(mapRowToBooking(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public List<Booking> getBookingsByUserId(int userId) {
+        String sql = "SELECT * FROM bookings WHERE user_id = ?";
+        List<Booking> list = new ArrayList<>();
+        try (Connection conn = JDBCConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, userId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while(rs.next()){
+                    list.add(mapRowToBooking(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public boolean updateBookingStatus(int id, String status) {
+        String sql = "UPDATE bookings SET status = ? WHERE id = ?";
+        try (Connection conn = JDBCConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, status);
+            stmt.setInt(2, id);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean updateBookingSupportStaff(int id, int staffId) {
+        String sql = "UPDATE bookings SET support_staff_id = ? WHERE id = ?";
+        try (Connection conn = JDBCConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, staffId);
+            stmt.setInt(2, id);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean updateBookingPrepStatus(int id, String prepStatus) {
+        String sql = "UPDATE bookings SET prep_status = ? WHERE id = ?";
+        try (Connection conn = JDBCConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, prepStatus);
+            stmt.setInt(2, id);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    private Booking mapRowToBooking(ResultSet rs) throws SQLException {
+        Booking b = new Booking();
+        b.setId(rs.getInt("id"));
+        b.setUserId(rs.getInt("user_id"));
+        b.setRoomId(rs.getInt("room_id"));
+
+        int staffId = rs.getInt("support_staff_id");
+        if (rs.wasNull()) {
+            b.setSupportStaffId(null);
+        } else {
+            b.setSupportStaffId(staffId);
+        }
+
+        b.setStartTime(rs.getTimestamp("start_time"));
+        b.setEndTime(rs.getTimestamp("end_time"));
+        b.setStatus(rs.getString("status"));
+        b.setPrepStatus(rs.getString("prep_status"));
+        b.setTotalCost(rs.getDouble("total_cost"));
+        b.setCreatedAt(rs.getTimestamp("created_at"));
+        return b;
+    }
 }
