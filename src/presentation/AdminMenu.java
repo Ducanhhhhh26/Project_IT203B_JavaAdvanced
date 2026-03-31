@@ -10,6 +10,7 @@ import model.User;
 
 import java.util.List;
 import java.util.Scanner;
+import java.io.Console;
 
 public class AdminMenu {
     private RoomService roomService = new RoomService();
@@ -133,8 +134,10 @@ public class AdminMenu {
                 case "1":
                     List<Room> rooms = roomService.getAllRooms();
                     System.out.println("Danh sách phòng:");
+                    System.out.printf("%-5s | %-20s | %-10s | %-15s | %-30s\n", "ID", "Tên", "Sức chứa", "Vị trí", "TB cố định");
+                    System.out.println("-".repeat(90));
                     for (Room r : rooms) {
-                        System.out.printf("ID: %d | Tên: %s | Sức chứa: %d | Vị trí: %s | TB cố định: %s\n",
+                        System.out.printf("%-5d | %-20s | %-10d | %-15s | %-30s\n",
                                 r.getId(), r.getName(), r.getCapacity(), r.getLocation(), r.getEquipmentDesc());
                     }
                     break;
@@ -203,8 +206,10 @@ public class AdminMenu {
                 case "1":
                     List<Equipment> eqs = equipmentService.getAllEquipment();
                     System.out.println("Danh sách thiết bị:");
+                    System.out.printf("%-5s | %-20s | %-10s | %-10s | %-15s\n", "ID", "Tên", "Tổng số", "Khả dụng", "Trạng thái");
+                    System.out.println("-".repeat(70));
                     for (Equipment e : eqs) {
-                        System.out.printf("ID: %d | Tên: %s | Tổng số: %d | Khả dụng: %d | Trạng thái: %s\n",
+                        System.out.printf("%-5d | %-20s | %-10d | %-10d | %-15s\n",
                                 e.getId(), e.getName(), e.getTotalQuantity(), e.getAvailableQuantity(), e.getStatus());
                     }
                     break;
@@ -245,7 +250,8 @@ public class AdminMenu {
     private void manageUsers() {
         System.out.println("\n--- TẠO TÀI KHOẢN NHÂN VIÊN HỖ TRỢ (SUPPORT STAFF) ---");
         System.out.print("Username: "); String user = scanner.nextLine();
-        System.out.print("Password: "); String pass = scanner.nextLine();
+        String pass = readPassword("Password: ");
+
         System.out.print("Họ tên: "); String fn = scanner.nextLine();
         System.out.print("Email: "); String email = scanner.nextLine();
         System.out.print("SĐT: "); String phone = scanner.nextLine();
@@ -254,6 +260,17 @@ public class AdminMenu {
             System.out.println("Tạo tài khoản Support Staff thành công!");
         } else {
             System.out.println("Tạo tài khoản thất bại!");
+        }
+    }
+
+    private String readPassword(String prompt) {
+        Console console = System.console();
+        if (console != null) {
+            char[] passwordArray = console.readPassword(prompt);
+            return new String(passwordArray);
+        } else {
+            System.out.print(prompt);
+            return scanner.nextLine();
         }
     }
 }

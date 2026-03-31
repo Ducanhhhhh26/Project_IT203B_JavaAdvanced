@@ -3,6 +3,7 @@ package presentation;
 import model.User;
 import service.AuthService;
 import java.util.Scanner;
+import java.io.Console;
 
 public class MainMenu {
     private AuthService authService = new AuthService();
@@ -35,8 +36,9 @@ public class MainMenu {
     }
 
     private void handleLogin() {
+        System.out.println("\n=== ĐĂNG NHẬP ===");
         System.out.print("Username: "); String user = scanner.nextLine();
-        System.out.print("Password: "); String pass = scanner.nextLine();
+        String pass = readPassword("Password: ");
 
         User loggedInUser = authService.login(user, pass);
         if (loggedInUser != null) {
@@ -60,9 +62,9 @@ public class MainMenu {
     }
 
     private void handleRegister() {
-        System.out.println("\n--- ĐĂNG KÝ TÀI KHOẢN NHÂN VIÊN ---");
+        System.out.println("\n=== ĐĂNG KÝ NHÂN VIÊN ===");
         System.out.print("Username: "); String user = scanner.nextLine();
-        System.out.print("Password: "); String pass = scanner.nextLine();
+        String pass = readPassword("Password: ");
         System.out.print("Họ tên: "); String fn = scanner.nextLine();
         System.out.print("Email: "); String email = scanner.nextLine();
         System.out.print("SĐT: "); String phone = scanner.nextLine();
@@ -72,6 +74,18 @@ public class MainMenu {
             System.out.println("Đăng ký thành công! Bạn có thể đăng nhập ngay bây giờ.");
         } else {
             System.out.println("Đăng ký thất bại. Vui lòng thử lại.");
+        }
+    }
+
+    private String readPassword(String prompt) {
+        Console console = System.console();
+        if (console != null) {
+            char[] passwordArray = console.readPassword(prompt);
+            return new String(passwordArray);
+        } else {
+            // Fallback dành cho các IDE (như IntelliJ, Eclipse) không hỗ trợ System.console()
+            System.out.print(prompt);
+            return scanner.nextLine();
         }
     }
 

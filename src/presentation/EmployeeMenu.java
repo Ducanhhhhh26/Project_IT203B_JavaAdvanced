@@ -11,6 +11,7 @@ import model.BookingDetail;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,8 +59,10 @@ public class EmployeeMenu {
             return;
         }
 
+        System.out.printf("%-5s | %-10s | %-20s | %-20s | %-15s | %-15s\n", "ID", "Room ID", "Bắt đầu", "Kết thúc", "Trạng thái", "Chuẩn bị");
+        System.out.println("-".repeat(95));
         for (model.Booking b : myBookings) {
-            System.out.printf("ID: %d | Room ID: %d | Time: %s to %s | Status: %s | Prep: %s\n",
+            System.out.printf("%-5d | %-10d | %-20s | %-20s | %-15s | %-15s\n",
                     b.getId(), b.getRoomId(), b.getStartTime(), b.getEndTime(), b.getStatus(), b.getPrepStatus());
         }
     }
@@ -73,10 +76,15 @@ public class EmployeeMenu {
             String endStr = scanner.nextLine();
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-            LocalDateTime startDT = LocalDateTime.parse(startStr, formatter);
-            LocalDateTime endDT = LocalDateTime.parse(endStr, formatter);
-            Timestamp startTime = Timestamp.valueOf(startDT);
-            Timestamp endTime = Timestamp.valueOf(endDT);
+            LocalDateTime startDT;
+            LocalDateTime endDT;
+            try {
+                startDT = LocalDateTime.parse(startStr, formatter);
+                endDT = LocalDateTime.parse(endStr, formatter);
+            } catch (DateTimeParseException e) {
+                System.out.println("Lỗi: Định dạng ngày giờ không hợp lệ. Vui lòng thử lại!");
+                return;
+            }
 
             if (!startDT.isBefore(endDT)) {
                 System.out.println("Lỗi: Thời gian kết thúc phải sau thời gian bắt đầu!");
@@ -87,8 +95,21 @@ public class EmployeeMenu {
                 return;
             }
 
+            Timestamp startTime = Timestamp.valueOf(startDT);
+            Timestamp endTime = Timestamp.valueOf(endDT);
+
             System.out.print("Nhập số người tham gia dự kiến: ");
-            int initCapacity = Integer.parseInt(scanner.nextLine());
+            int initCapacity;
+            try {
+                initCapacity = Integer.parseInt(scanner.nextLine());
+                if (initCapacity <= 0) {
+                    System.out.println("Lỗi: Số người tham gia phải lớn hơn 0.");
+                    return;
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Lỗi: Sức chứa phải là một số nguyên!");
+                return;
+            }
 
             List<Room> availableRooms = roomService.getAvailableRooms(startTime, endTime, initCapacity);
             if (availableRooms.isEmpty()) {
@@ -96,18 +117,27 @@ public class EmployeeMenu {
                 return;
             }
 
-            System.out.println("\nDanh sách phòng trống:");
+            System.out.println("\nDanh sách phòng trống thích hợp:");
+            System.out.printf("%-5s | %-20s | %-10s | %-20s\n", "ID", "Tên", "Sức chứa", "Vị trí");
+            System.out.println("-".repeat(65));
             for (Room r : availableRooms) {
-                System.out.printf("ID: %d | Tên: %s | Sức chứa: %d | Vị trí: %s%n",
+                System.out.printf("%-5d | %-20s | %-10d | %-20s\n",
                                   r.getId(), r.getName(), r.getCapacity(), r.getLocation());
             }
+
             System.out.print("Nhập ID phòng muốn đặt: ");
-            int roomId = Integer.parseInt(scanner.nextLine());
+            int roomId;
+            try {
+                roomId = Integer.parseInt(scanner.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("Lỗi: ID phòng phải là một số nguyên!");
+                return;
+            }
 
             // Check valid id
             boolean valid = availableRooms.stream().anyMatch(r -> r.getId() == roomId);
             if (!valid) {
-                 System.out.println("ID phòng không hợp lệ.");
+                 System.out.println("ID phòng không hợp lệ hoặc không đủ sức chứa.");
                  return;
             }
 
@@ -118,21 +148,29 @@ public class EmployeeMenu {
             if (yesNo.equalsIgnoreCase("Y")) {
                 List<Equipment> configs = equipmentService.getAllEquipment();
                 System.out.println("Danh sách thiết bị có thể mượn:");
+                System.out.printf("%-5s | %-20s | %-15s\n", "ID", "Tên", "Số lượng sẵn có");
+                System.out.println("-".repeat(45));
                 for (Equipment eq : configs) {
-                   System.out.printf("ID: %d | Tên: %s | Khả dụng: %d%n", eq.getId(), eq.getName(), eq.getAvailableQuantity());
+                   System.out.printf("%-5d | %-20s | %-15d\n", eq.getId(), eq.getName(), eq.getAvailableQuantity());
                 }
                 while (true) {
-                    System.out.print("Nhập ID thiết bị để thêm (hoặc 0 để dừng): ");
-                    int eqId = Integer.parseInt(scanner.nextLine());
-                    if (eqId == 0) break;
-                    System.out.print("Nhập số lượng: ");
-                    int qty = Integer.parseInt(scanner.nextLine());
-                    if (qty > 0) {
-                        BookingDetail bd = new BookingDetail();
-                        bd.setType("EQUIPMENT");
-                        bd.setItemId(eqId);
-                        bd.setQuantity(qty);
-                        details.add(bd);
+                    try {
+                        System.out.print("Nhập ID thiết bị để thêm (hoặc 0 để dừng): ");
+                        int eqId = Integer.parseInt(scanner.nextLine());
+                        if (eqId == 0) break;
+                        System.out.print("Nhập số lượng: ");
+                        int qty = Integer.parseInt(scanner.nextLine());
+                        if (qty > 0) {
+                            BookingDetail bd = new BookingDetail();
+                            bd.setType("EQUIPMENT");
+                            bd.setItemId(eqId);
+                            bd.setQuantity(qty);
+                            details.add(bd);
+                        } else {
+                            System.out.println("Số lượng phải lớn hơn 0!");
+                        }
+                    } catch (NumberFormatException ex) {
+                        System.out.println("Vui lòng nhập số hợp lệ.");
                     }
                 }
             }
@@ -146,7 +184,7 @@ public class EmployeeMenu {
             }
 
         } catch (Exception e) {
-            System.out.println("Lỗi nhập liệu: " + e.getMessage());
+            System.out.println("Đã xảy ra lỗi: " + e.getMessage());
         }
     }
 }
