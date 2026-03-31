@@ -6,6 +6,7 @@ import util.Logger;
 
 import java.util.Scanner;
 import java.io.Console;
+import java.util.regex.Pattern;
 
 public class MainMenu {
     private AuthService authService = new AuthService();
@@ -65,18 +66,57 @@ public class MainMenu {
 
     private void handleRegister() {
         System.out.println("\n=== ĐĂNG KÝ NHÂN VIÊN ===");
-        System.out.print("Username: "); String user = scanner.nextLine();
-        String pass = readPassword("Password: ");
-        System.out.print("Họ tên: "); String fn = scanner.nextLine();
-        System.out.print("Email: "); String email = scanner.nextLine();
-        System.out.print("SĐT: "); String phone = scanner.nextLine();
-        System.out.print("Phòng ban: "); String dept = scanner.nextLine();
+
+        String user = "";
+        while (user.isEmpty()) {
+            System.out.print("Username (bắt buộc): ");
+            user = scanner.nextLine().trim();
+        }
+
+        String pass = "";
+        while (pass.isEmpty()) {
+            pass = readPassword("Password (bắt buộc): ").trim();
+        }
+
+        String fn = "";
+        while (fn.isEmpty()) {
+            System.out.print("Họ tên (bắt buộc): ");
+            fn = scanner.nextLine().trim();
+        }
+
+        String email = "";
+        while (true) {
+            System.out.print("Email (bắt buộc, định dạng hợp lệ): ");
+            email = scanner.nextLine().trim();
+            if (isValidEmail(email)) break;
+            System.out.println("Lỗi: Email không hợp lệ (vd: abc@domain.com).");
+        }
+
+        String phone = "";
+        while (true) {
+            System.out.print("SĐT (bắt buộc, 10-11 số): ");
+            phone = scanner.nextLine().trim();
+            if (isValidPhone(phone)) break;
+            System.out.println("Lỗi: Số điện thoại không hợp lệ.");
+        }
+
+        System.out.print("Phòng ban: "); String dept = scanner.nextLine().trim();
 
         if (authService.registerEmployee(user, pass, fn, email, phone, dept)) {
             System.out.println("Đăng ký thành công! Bạn có thể đăng nhập ngay bây giờ.");
         } else {
             System.out.println("Đăng ký thất bại. Vui lòng thử lại.");
         }
+    }
+
+    private boolean isValidEmail(String email) {
+        String emailRegex = "^[A-Za-z0-9+_.-]+@(.+)$";
+        return Pattern.compile(emailRegex).matcher(email).matches() && !email.isEmpty();
+    }
+
+    private boolean isValidPhone(String phone) {
+        String phoneRegex = "^[0-9]{10,11}$";
+        return Pattern.compile(phoneRegex).matcher(phone).matches();
     }
 
     private String readPassword(String prompt) {

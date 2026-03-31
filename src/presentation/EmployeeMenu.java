@@ -115,45 +115,51 @@ public class EmployeeMenu {
     private void handleBooking() {
         try {
             System.out.println("\n--- ĐẶT PHÒNG HỌP ---");
-            System.out.print("Nhập thời gian bắt đầu (vd: yyyy-MM-dd HH:mm): ");
-            String startStr = scanner.nextLine();
-            System.out.print("Nhập thời gian kết thúc (vd: yyyy-MM-dd HH:mm): ");
-            String endStr = scanner.nextLine();
 
+            LocalDateTime startDT = null;
+            LocalDateTime endDT = null;
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-            LocalDateTime startDT;
-            LocalDateTime endDT;
-            try {
-                startDT = LocalDateTime.parse(startStr, formatter);
-                endDT = LocalDateTime.parse(endStr, formatter);
-            } catch (DateTimeParseException e) {
-                System.out.println("Lỗi: Định dạng ngày giờ không hợp lệ. Vui lòng thử lại!");
-                return;
-            }
 
-            if (!startDT.isBefore(endDT)) {
-                System.out.println("Lỗi: Thời gian kết thúc phải sau thời gian bắt đầu!");
-                return;
-            }
-            if (startDT.isBefore(LocalDateTime.now())) {
-                System.out.println("Lỗi: Không thể đặt phòng trong quá khứ!");
-                return;
+            while (true) {
+                try {
+                    System.out.print("Nhập thời gian bắt đầu (vd: yyyy-MM-dd HH:mm): ");
+                    String startStr = scanner.nextLine();
+                    System.out.print("Nhập thời gian kết thúc (vd: yyyy-MM-dd HH:mm): ");
+                    String endStr = scanner.nextLine();
+
+                    startDT = LocalDateTime.parse(startStr, formatter);
+                    endDT = LocalDateTime.parse(endStr, formatter);
+
+                    if (!startDT.isBefore(endDT)) {
+                        System.out.println("Lỗi: Thời gian kết thúc phải sau thời gian bắt đầu!");
+                        continue;
+                    }
+                    if (startDT.isBefore(LocalDateTime.now())) {
+                        System.out.println("Lỗi: Không thể đặt phòng trong quá khứ!");
+                        continue;
+                    }
+                    break; // All good
+                } catch (DateTimeParseException e) {
+                    System.out.println("Lỗi: Định dạng ngày giờ không hợp lệ. Vui lòng thử lại!");
+                }
             }
 
             Timestamp startTime = Timestamp.valueOf(startDT);
             Timestamp endTime = Timestamp.valueOf(endDT);
 
-            System.out.print("Nhập số người tham gia dự kiến: ");
-            int initCapacity;
-            try {
-                initCapacity = Integer.parseInt(scanner.nextLine());
-                if (initCapacity <= 0) {
-                    System.out.println("Lỗi: Số người tham gia phải lớn hơn 0.");
-                    return;
+            int initCapacity = 0;
+            while (true) {
+                System.out.print("Nhập số người tham gia dự kiến: ");
+                try {
+                    initCapacity = Integer.parseInt(scanner.nextLine());
+                    if (initCapacity <= 0) {
+                        System.out.println("Lỗi: Số người tham gia phải lớn hơn 0.");
+                    } else {
+                        break;
+                    }
+                } catch (NumberFormatException e) {
+                    System.out.println("Lỗi: Sức chứa phải là một số nguyên!");
                 }
-            } catch (NumberFormatException e) {
-                System.out.println("Lỗi: Sức chứa phải là một số nguyên!");
-                return;
             }
 
             List<Room> availableRooms = roomService.getAvailableRooms(startTime, endTime, initCapacity);
@@ -170,20 +176,21 @@ public class EmployeeMenu {
                                   r.getId(), r.getName(), r.getCapacity(), r.getLocation());
             }
 
-            System.out.print("Nhập ID phòng muốn đặt: ");
-            int roomId;
-            try {
-                roomId = Integer.parseInt(scanner.nextLine());
-            } catch (NumberFormatException e) {
-                System.out.println("Lỗi: ID phòng phải là một số nguyên!");
-                return;
-            }
-
-            // Check valid id
-            boolean valid = availableRooms.stream().anyMatch(r -> r.getId() == roomId);
-            if (!valid) {
-                 System.out.println("ID phòng không hợp lệ hoặc không đủ sức chứa.");
-                 return;
+            int roomId = -1;
+            while (true) {
+                System.out.print("Nhập ID phòng muốn đặt: ");
+                try {
+                    int rId = Integer.parseInt(scanner.nextLine());
+                    boolean valid = availableRooms.stream().anyMatch(r -> r.getId() == rId);
+                    if (!valid) {
+                         System.out.println("Lỗi: ID phòng không hợp lệ hoặc không có trong danh sách tìm kiếm trên.");
+                    } else {
+                        roomId = rId;
+                        break;
+                    }
+                } catch (NumberFormatException e) {
+                    System.out.println("Lỗi: ID phòng phải là một số nguyên!");
+                }
             }
 
             // Allow selecting extra equipment

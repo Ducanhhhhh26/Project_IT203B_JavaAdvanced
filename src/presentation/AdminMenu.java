@@ -11,6 +11,7 @@ import model.User;
 import java.util.List;
 import java.util.Scanner;
 import java.io.Console;
+import java.util.regex.Pattern;
 
 public class AdminMenu {
     private RoomService roomService = new RoomService();
@@ -259,18 +260,55 @@ public class AdminMenu {
 
     private void manageUsers() {
         System.out.println("\n--- TẠO TÀI KHOẢN NHÂN VIÊN HỖ TRỢ (SUPPORT STAFF) ---");
-        System.out.print("Username: "); String user = scanner.nextLine();
-        String pass = readPassword("Password: ");
 
-        System.out.print("Họ tên: "); String fn = scanner.nextLine();
-        System.out.print("Email: "); String email = scanner.nextLine();
-        System.out.print("SĐT: "); String phone = scanner.nextLine();
+        String user = "";
+        while (user.isEmpty()) {
+            System.out.print("Username (bắt buộc): ");
+            user = scanner.nextLine().trim();
+        }
+
+        String pass = "";
+        while (pass.isEmpty()) {
+            pass = readPassword("Password (bắt buộc): ").trim();
+        }
+
+        String fn = "";
+        while (fn.isEmpty()) {
+            System.out.print("Họ tên (bắt buộc): ");
+            fn = scanner.nextLine().trim();
+        }
+
+        String email = "";
+        while (true) {
+            System.out.print("Email (bắt buộc): ");
+            email = scanner.nextLine().trim();
+            if (isValidEmail(email)) break;
+            System.out.println("Lỗi: Email không hợp lệ (vd: abc@domain.com).");
+        }
+
+        String phone = "";
+        while (true) {
+            System.out.print("SĐT (bắt buộc, 10-11 số): ");
+            phone = scanner.nextLine().trim();
+            if (isValidPhone(phone)) break;
+            System.out.println("Lỗi: Số điện thoại không hợp lệ.");
+        }
 
         if (adminService.createSupportStaff(user, pass, fn, email, phone)) {
             System.out.println("Tạo tài khoản Support Staff thành công!");
         } else {
             System.out.println("Tạo tài khoản thất bại!");
         }
+    }
+
+    private boolean isValidEmail(String email) {
+        String emailRegex = "^[A-Za-z0-9+_.-]+@(.+)$";
+        return Pattern.compile(emailRegex).matcher(email).matches() && !email.isEmpty();
+    }
+
+    private boolean isValidPhone(String phone) {
+        String phoneRegex = "^[0-9]{10,11}$";
+        return Pattern.compile(phoneRegex).matcher(phone).matches();
     }
 
     private String readPassword(String prompt) {
