@@ -26,6 +26,7 @@ public class AdminMenu {
             System.out.println("3. Quản lý người dùng (Tạo tài khoản Support Staff)");
             System.out.println("4. Duyệt yêu cầu đặt phòng");
             System.out.println("5. Phân công Support Staff");
+            System.out.println("6. Xem báo cáo thống kê");
             System.out.println("0. Đăng xuất");
             System.out.print("Chọn: ");
             String choice = scanner.nextLine();
@@ -46,12 +47,21 @@ public class AdminMenu {
                 case "5":
                     assignSupportStaff();
                     break;
+                case "6":
+                    viewStatistics();
+                    break;
                 case "0":
                     return;
                 default:
                     System.out.println("Lựa chọn không hợp lệ!");
             }
         }
+    }
+
+    private void viewStatistics() {
+        System.out.println("\n--- BÁO CÁO THỐNG KÊ ---");
+        adminService.printStatistics();
+        adminService.printRecentFeedbacks();
     }
 
     private void manageBookings() {

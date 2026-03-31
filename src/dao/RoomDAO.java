@@ -9,13 +9,14 @@ import java.util.List;
 public class RoomDAO {
 
     public boolean addRoom(Room room) {
-        String sql = "INSERT INTO rooms (name, capacity, location, equipment_desc) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO rooms (name, capacity, location, equipment_desc, price_per_hour) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = JDBCConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, room.getName());
             stmt.setInt(2, room.getCapacity());
             stmt.setString(3, room.getLocation());
             stmt.setString(4, room.getEquipmentDesc());
+            stmt.setDouble(5, room.getPricePerHour());
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             System.err.println("Lỗi thêm phòng: " + e.getMessage());
@@ -64,14 +65,15 @@ public class RoomDAO {
     }
 
     public boolean updateRoom(Room room) {
-        String sql = "UPDATE rooms SET name = ?, capacity = ?, location = ?, equipment_desc = ? WHERE id = ?";
+        String sql = "UPDATE rooms SET name = ?, capacity = ?, location = ?, equipment_desc = ?, price_per_hour = ? WHERE id = ?";
         try (Connection conn = JDBCConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, room.getName());
             stmt.setInt(2, room.getCapacity());
             stmt.setString(3, room.getLocation());
             stmt.setString(4, room.getEquipmentDesc());
-            stmt.setInt(5, room.getId());
+            stmt.setDouble(5, room.getPricePerHour());
+            stmt.setInt(6, room.getId());
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             System.err.println("Lỗi cập nhật phòng: " + e.getMessage());
@@ -98,6 +100,7 @@ public class RoomDAO {
         room.setCapacity(rs.getInt("capacity"));
         room.setLocation(rs.getString("location"));
         room.setEquipmentDesc(rs.getString("equipment_desc"));
+        room.setPricePerHour(rs.getDouble("price_per_hour"));
         return room;
     }
 }

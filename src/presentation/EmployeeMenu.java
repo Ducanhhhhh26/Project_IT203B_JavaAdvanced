@@ -32,6 +32,7 @@ public class EmployeeMenu {
             System.out.println("Xin chào, " + currentUser.getFullName());
             System.out.println("1. Đặt phòng (Booking)");
             System.out.println("2. Xem lịch sử đặt phòng của tôi");
+            System.out.println("3. Đánh giá phòng họp (Feedback)");
             System.out.println("0. Đăng xuất");
             System.out.print("Chọn: ");
             String choice = scanner.nextLine();
@@ -43,11 +44,55 @@ public class EmployeeMenu {
                 case "2":
                     viewMyBookings();
                     break;
+                case "3":
+                    leaveFeedback();
+                    break;
                 case "0":
                     return;
                 default:
                     System.out.println("Tính năng đang phát triển hoặc lựa chọn không hợp lệ!");
             }
+        }
+    }
+
+    private void leaveFeedback() {
+        System.out.println("\n--- ĐÁNH GIÁ PHÒNG HỌP ---");
+        List<model.Booking> bookings = bookingService.getMyBookings(currentUser.getId());
+        boolean hasCompleted = false;
+        long now = System.currentTimeMillis();
+
+        for (model.Booking b : bookings) {
+            if ("APPROVED".equals(b.getStatus()) && b.getEndTime().getTime() < now) {
+                String ratingStr = (b.getRating() > 0) ? b.getRating() + " Sao" : "Chưa đánh giá";
+                System.out.printf("ID: %d | Phòng: %d | Thời gian: %s - %s | Trạng thái: %s\n",
+                        b.getId(), b.getRoomId(), b.getStartTime().toString(), b.getEndTime().toString(), ratingStr);
+                hasCompleted = true;
+            }
+        }
+
+        if (!hasCompleted) {
+            System.out.println("Chưa có cuộc họp nào đã hoàn thành (hoặc đã được duyệt và kết thúc) để đánh giá.");
+            return;
+        }
+
+        System.out.print("\nNhập ID booking muốn đánh giá (hoặc 0 để thoát): ");
+        try {
+            int bookingId = Integer.parseInt(scanner.nextLine());
+            if (bookingId == 0) return;
+
+            System.out.print("Nhập số sao đánh giá (1-5): ");
+            int rating = Integer.parseInt(scanner.nextLine());
+
+            System.out.print("Nhập nhận xét/phản hồi của bạn: ");
+            String feedback = scanner.nextLine();
+
+            if (bookingService.addFeedback(bookingId, rating, feedback)) {
+                System.out.println("Cảm ơn bạn đã gửi đánh giá thành công!");
+            } else {
+                System.out.println("Gửi đánh giá thất bại.");
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Lỗi: ID hợp lệ và số sao phải là số.");
         }
     }
 

@@ -2,6 +2,8 @@ package presentation;
 
 import model.User;
 import service.AuthService;
+import util.Logger;
+
 import java.util.Scanner;
 import java.io.Console;
 
@@ -43,7 +45,7 @@ public class MainMenu {
         User loggedInUser = authService.login(user, pass);
         if (loggedInUser != null) {
             System.out.println("Đăng nhập thành công! Vai trò: " + loggedInUser.getRole());
-            switch (loggedInUser.getRole()) { // Đã chuyển sang dùng Enum
+            switch (loggedInUser.getRole()) {
                 case ADMIN:
                     new AdminMenu().showMenu();
                     break;
@@ -90,6 +92,13 @@ public class MainMenu {
     }
 
     public static void main(String[] args) {
-        new MainMenu().start();
+        // Tạo dữ liệu mẫu cho người dùng
+//        SeedUsers.init();
+
+        System.out.println("Tạo dữ liệu mẫu thành công.");
+        Logger.info("Hệ thống khởi động và kiểm tra dữ liệu mẫu.");
+
+        MainMenu menu = new MainMenu();
+        menu.start();
     }
 }

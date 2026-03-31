@@ -12,11 +12,13 @@ public class Booking {
     private String status; // PENDING, APPROVED, REJECTED, CANCELLED
     private String prepStatus; // NOT_READY, PREPARING, READY
     private double totalCost;
+    private int rating;
+    private String feedback;
     private Timestamp createdAt;
 
     public Booking() {}
 
-    public Booking(int id, int userId, int roomId, Integer supportStaffId, Timestamp startTime, Timestamp endTime, String status, String prepStatus, double totalCost, Timestamp createdAt) {
+    public Booking(int id, int userId, int roomId, Integer supportStaffId, Timestamp startTime, Timestamp endTime, String status, String prepStatus, double totalCost, int rating, String feedback, Timestamp createdAt) {
         this.id = id;
         this.userId = userId;
         this.roomId = roomId;
@@ -26,6 +28,8 @@ public class Booking {
         this.status = status;
         this.prepStatus = prepStatus;
         this.totalCost = totalCost;
+        this.rating = rating;
+        this.feedback = feedback;
         this.createdAt = createdAt;
     }
 
@@ -47,6 +51,10 @@ public class Booking {
     public void setPrepStatus(String prepStatus) { this.prepStatus = prepStatus; }
     public double getTotalCost() { return totalCost; }
     public void setTotalCost(double totalCost) { this.totalCost = totalCost; }
+    public int getRating() { return rating; }
+    public void setRating(int rating) { this.rating = rating; }
+    public String getFeedback() { return feedback; }
+    public void setFeedback(String feedback) { this.feedback = feedback; }
     public Timestamp getCreatedAt() { return createdAt; }
     public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
 }

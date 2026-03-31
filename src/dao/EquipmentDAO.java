@@ -9,13 +9,14 @@ import java.util.List;
 public class EquipmentDAO {
 
     public boolean addEquipment(Equipment eq) {
-        String sql = "INSERT INTO equipments (name, total_quantity, available_quantity, status) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO equipments (name, total_quantity, available_quantity, status, rental_price) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = JDBCConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, eq.getName());
             stmt.setInt(2, eq.getTotalQuantity());
             stmt.setInt(3, eq.getAvailableQuantity());
             stmt.setString(4, eq.getStatus());
+            stmt.setDouble(5, eq.getRentalPrice());
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             System.err.println("Lỗi thêm thiết bị: " + e.getMessage());
@@ -36,6 +37,7 @@ public class EquipmentDAO {
                 eq.setTotalQuantity(rs.getInt("total_quantity"));
                 eq.setAvailableQuantity(rs.getInt("available_quantity"));
                 eq.setStatus(rs.getString("status"));
+                eq.setRentalPrice(rs.getDouble("rental_price"));
                 equipmentList.add(eq);
             }
         } catch (SQLException e) {

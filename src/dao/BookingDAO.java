@@ -149,6 +149,57 @@ public class BookingDAO {
         return false;
     }
 
+    public boolean updateFeedback(int id, int rating, String feedback) {
+        String sql = "UPDATE bookings SET rating = ?, feedback = ? WHERE id = ?";
+        try (Connection conn = JDBCConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, rating);
+            stmt.setString(2, feedback);
+            stmt.setInt(3, id);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public void printRevenueByMonth() {
+        String sql = "SELECT YEAR(start_time) as year, MONTH(start_time) as month, SUM(total_cost) as revenue " +
+                     "FROM bookings WHERE status = 'APPROVED' " +
+                     "GROUP BY YEAR(start_time), MONTH(start_time) ORDER BY year DESC, month DESC";
+        try (Connection conn = JDBCConnection.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            System.out.println("=== DOANH THU THEO THÁNG ===");
+            System.out.printf("%-10s | %-10s | %-15s\n", "Năm", "Tháng", "Doanh thu (VND)");
+            System.out.println("----------------------------------------");
+            while (rs.next()) {
+                System.out.printf("%-10d | %-10d | %-15.2f\n", rs.getInt("year"), rs.getInt("month"), rs.getDouble("revenue"));
+            }
+        } catch (SQLException e) {
+            System.err.println("Lỗi thống kê doanh thu: " + e.getMessage());
+        }
+    }
+
+    public void printMostBookedRooms() {
+        String sql = "SELECT r.name, COUNT(b.id) as booking_count " +
+                     "FROM bookings b JOIN rooms r ON b.room_id = r.id " +
+                     "WHERE b.status = 'APPROVED' " +
+                     "GROUP BY r.id, r.name ORDER BY booking_count DESC LIMIT 5";
+        try (Connection conn = JDBCConnection.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            System.out.println("=== TOP 5 PHÒNG ĐƯỢC ĐẶT NHIỀU NHẤT ===");
+            System.out.printf("%-20s | %-15s\n", "Tên phòng", "Số lần đặt");
+            System.out.println("----------------------------------------");
+            while (rs.next()) {
+                System.out.printf("%-20s | %-15d\n", rs.getString("name"), rs.getInt("booking_count"));
+            }
+        } catch (SQLException e) {
+            System.err.println("Lỗi thống kê phòng chờ: " + e.getMessage());
+        }
+    }
+
     private Booking mapRowToBooking(ResultSet rs) throws SQLException {
         Booking b = new Booking();
         b.setId(rs.getInt("id"));
@@ -167,6 +218,15 @@ public class BookingDAO {
         b.setStatus(rs.getString("status"));
         b.setPrepStatus(rs.getString("prep_status"));
         b.setTotalCost(rs.getDouble("total_cost"));
+
+        // Handling rating and feedback if they exist in schema
+        try {
+            b.setRating(rs.getInt("rating"));
+            b.setFeedback(rs.getString("feedback"));
+        } catch (SQLException e) {
+            // Columns might not exist yet if migration wasn't run
+        }
+
         b.setCreatedAt(rs.getTimestamp("created_at"));
         return b;
     }

@@ -6,15 +6,17 @@ public class Room {
     private int capacity;
     private String location;
     private String equipmentDesc;
+    private double pricePerHour;
 
     public Room() {}
 
-    public Room(int id, String name, int capacity, String location, String equipmentDesc) {
+    public Room(int id, String name, int capacity, String location, String equipmentDesc, double pricePerHour) {
         this.id = id;
         this.name = name;
         this.capacity = capacity;
         this.location = location;
         this.equipmentDesc = equipmentDesc;
+        this.pricePerHour = pricePerHour;
     }
 
     public int getId() { return id; }
@@ -27,4 +29,6 @@ public class Room {
     public void setLocation(String location) { this.location = location; }
     public String getEquipmentDesc() { return equipmentDesc; }
     public void setEquipmentDesc(String equipmentDesc) { this.equipmentDesc = equipmentDesc; }
+    public double getPricePerHour() { return pricePerHour; }
+    public void setPricePerHour(double pricePerHour) { this.pricePerHour = pricePerHour; }
 }

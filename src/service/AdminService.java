@@ -5,6 +5,7 @@ import dao.BookingDAO;
 import model.User;
 import model.Booking;
 import model.Role;
+import util.Logger;
 
 import java.util.List;
 
@@ -36,11 +37,19 @@ public class AdminService {
     }
 
     public boolean approveBooking(int bookingId) {
-        return bookingDAO.updateBookingStatus(bookingId, "APPROVED");
+        boolean success = bookingDAO.updateBookingStatus(bookingId, "APPROVED");
+        if (success) {
+            Logger.info("Admin đã phê duyệt yêu cầu đặt phòng (ID: " + bookingId + ")");
+        }
+        return success;
     }
 
     public boolean rejectBooking(int bookingId) {
-        return bookingDAO.updateBookingStatus(bookingId, "REJECTED");
+        boolean success = bookingDAO.updateBookingStatus(bookingId, "REJECTED");
+        if (success) {
+            Logger.info("Admin đã từ chối yêu cầu đặt phòng (ID: " + bookingId + ")");
+        }
+        return success;
     }
 
     public List<User> getSupportStaffs() {
@@ -48,6 +57,32 @@ public class AdminService {
     }
 
     public boolean assignSupportStaff(int bookingId, int staffId) {
-        return bookingDAO.updateBookingSupportStaff(bookingId, staffId);
+        boolean success = bookingDAO.updateBookingSupportStaff(bookingId, staffId);
+        if (success) {
+            Logger.info("Admin đã phân công Support Staff (ID: " + staffId + ") cho Booking (ID: " + bookingId + ")");
+        }
+        return success;
+    }
+
+    public void printStatistics() {
+        bookingDAO.printRevenueByMonth();
+        System.out.println();
+        bookingDAO.printMostBookedRooms();
+    }
+
+    public void printRecentFeedbacks() {
+        System.out.println("\n=== PHẢN HỒI GẦN ĐÂY ===");
+        List<Booking> list = getApprovedBookings();
+        boolean hasFeedback = false;
+        for (Booking b : list) {
+            if (b.getRating() > 0) {
+                System.out.printf("Cần ID: %d | Phòng: %d | Đánh giá: %d Sao | Nhận xét: %s\n",
+                        b.getId(), b.getRoomId(), b.getRating(), b.getFeedback());
+                hasFeedback = true;
+            }
+        }
+        if (!hasFeedback) {
+            System.out.println("Chưa có phản hồi nào.");
+        }
     }
 }
